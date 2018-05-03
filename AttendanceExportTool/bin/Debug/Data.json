@@ -1,0 +1,80 @@
+{
+    //当前月份
+    "CurrentMonth": 4,
+    //导入数据表格地址
+    "ImportPath": "2018.04万信达导出数据.xlsx",
+    //导出数据表格地址
+    "ExportPath": "2018年销售部门考勤明细表.xlsx",
+    
+    //打卡签到地址
+    "WorkAddress":[
+        {
+            //行政打卡地址
+            "Id": 1, 
+            "AddressList":[
+                "上海市闵行区"
+            ]
+        },
+        {
+            //业务打卡地址
+            "Id": 2, 
+            "AddressList":[
+                "上海市闵行区"
+            ]
+        },
+        {
+            //导购打卡地址
+            "Id": 3, 
+            "AddressList":[
+                "上海市闵行区"
+            ]
+        }
+    ],
+    
+    
+    //工作人员信息
+    "MemberInfoList":[
+        {
+            "Name":"鲍士华",
+            "Id":3008,
+            "WorkAddress":3,
+            "WorkTimeType":1
+        },
+        {
+            "Name":"李晓芳",
+            "Id":6012,
+            "WorkAddress":1,
+            "WorkTimeType":2
+        }
+    ],
+    //工作时间类型
+    "MemberWorkTimeList":[
+        {
+            //作一休一
+            "Id":1,
+            "Type":"Loop",
+            "StartTime":"7:00",
+            "EndTime":"20:00"
+        },
+        {
+            //作五休一
+            "Id":2,
+            "Type":"1111100",
+            "StartTime":"9:00",
+            "EndTime":"17:30"
+        },
+        {
+            //作六休一
+            "Id":3,
+            "Type":"1111110",
+            "StartTime":"9:00",
+            "EndTime":"17:00"
+        }
+    ],
+    //国家放假日期
+    "HolidayTimeList":[
+        "2018/4/29-2018/5/1"
+    ],
+    //迟到早退允许时间, 单位分钟
+    "ClockThreshold":10
+}
