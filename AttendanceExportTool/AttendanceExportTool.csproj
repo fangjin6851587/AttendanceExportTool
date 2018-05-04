@@ -738,6 +738,7 @@
     <Compile Include="EPPlus\VBA\ExcelVBASignature.cs" />
     <Compile Include="EPPlus\XmlHelper.cs" />
     <Compile Include="EPPlus\XmlHelperFactory.cs" />
+    <Compile Include="ExportExcelSheet.cs" />
     <Compile Include="IInit.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

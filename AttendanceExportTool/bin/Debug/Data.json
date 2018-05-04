@@ -6,27 +6,44 @@
     //导出数据表格地址
     "ExportPath": "2018年销售部门考勤明细表.xlsx",
     
+    "ExportExcelSetting":{
+        "Title":"销售部考勤明细表",
+        "Author":"李晓芳",
+        "Company":"丽洁 Inc.",
+        "SignTitleFontSize": 11,
+        "SignCellHeight": 30,
+        "SignTitleBackgroundColor": "#FFFFE0"
+    },
+    
     //打卡签到地址
     "WorkAddress":[
         {
             //行政打卡地址
             "Id": 1, 
             "AddressList":[
-                "上海市闵行区"
+                "联航路",
+                "外环西路",
+                "三达支路",
+                "恒南路",
+                "恒西路"
             ]
         },
         {
             //业务打卡地址
             "Id": 2, 
             "AddressList":[
-                "上海市闵行区"
+                "联航路",
+                "外环西路",
+                "三达支路",
+                "恒南路",
+                "恒西路"
             ]
         },
         {
             //导购打卡地址
             "Id": 3, 
             "AddressList":[
-                "上海市闵行区"
+                "上海市"
             ]
         }
     ],
@@ -35,16 +52,25 @@
     //工作人员信息
     "MemberInfoList":[
         {
+            "Name":"仇霞",
+            "Id":9005,
+            "WorkAddress":1,
+            "WorkTimeType":2,
+            "DimissionTime":"2018/4/10"
+        },
+        {
             "Name":"鲍士华",
             "Id":3008,
             "WorkAddress":3,
-            "WorkTimeType":1
+            "WorkTimeType":1,
+            "DimissionTime":"9999/1/1"
         },
         {
             "Name":"李晓芳",
             "Id":6012,
             "WorkAddress":1,
-            "WorkTimeType":2
+            "WorkTimeType":2,
+            "DimissionTime":"9999/1/1"
         }
     ],
     //工作时间类型
@@ -52,7 +78,7 @@
         {
             //作一休一
             "Id":1,
-            "Type":"Loop",
+            "Type":"10",
             "StartTime":"7:00",
             "EndTime":"20:00"
         },

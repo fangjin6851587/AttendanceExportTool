@@ -29,6 +29,8 @@ namespace AttendanceExportTool
                 }
             }
 
+            AttendanceDataManager.Instance.Export();
+
             LogController.Log("===============================Init success=================================");
         }
     }
