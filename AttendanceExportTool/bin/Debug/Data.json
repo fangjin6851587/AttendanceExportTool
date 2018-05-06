@@ -1,10 +1,16 @@
 {
     //当前月份
     "CurrentMonth": 4,
-    //导入数据表格地址
-    "ImportPath": "2018.04万信达导出数据.xlsx",
-    //导出数据表格地址
-    "ExportPath": "2018年销售部门考勤明细表.xlsx",
+    //万信达导出数据地址
+    "ImportSignPath": "2018.04万信达导出数据.xlsx",
+    //人事档案
+    "ImportMemberPath": "人事档案-万信达.xlsx",
+    //加班记录
+    "OverTimePath": "加班记录2018.04.xlsx",
+    //业务人员导出数据表格地址
+    "BusinessExportPath": "2018年销售部门考勤明细表.xlsx",
+    //导购人员导出数据表格地址
+    "ShoppingGuideExportPath": "2018导购考勤明细表.xlsx",
     
     "ExportExcelSetting":{
         "Title":"销售部考勤明细表",
@@ -12,14 +18,27 @@
         "Company":"丽洁 Inc.",
         "SignTitleFontSize": 11,
         "SignCellHeight": 30,
+        "SignCellWidth": 6.5,
         "SignTitleBackgroundColor": "#FFFFE0"
     },
+    
+    "SpecailMemberList":[
+        {
+            "Id":9011,
+            "Type":"Business"
+        }
+    ],
     
     //打卡签到地址
     "WorkAddress":[
         {
             //行政打卡地址
-            "Id": 1, 
+            "Id":1,
+            "Type": "Administration", 
+            "SubType":"None",
+            "TypeValue":"1111100",
+            "StartTime":"9:00",
+            "EndTime":"17:00",
             "AddressList":[
                 "联航路",
                 "外环西路",
@@ -29,77 +48,69 @@
             ]
         },
         {
-            //业务打卡地址
-            "Id": 2, 
+            //业务打卡地址(在公司)
+            "Id":2,
+            "Type": "Business", 
+            "SubType":"InCompany",
+            "TypeValue":"0111111",
+            "StartTime":"9:00",
+            "EndTime":"17:30",
             "AddressList":[
                 "联航路",
                 "外环西路",
                 "三达支路",
                 "恒南路",
                 "恒西路"
+            ]
+        },
+        {
+            //业务打卡地址(巡店)
+            "Id":3,
+            "Type": "Business", 
+            "SubType":"ShopPatrol",
+            "TypeValue":"0111111",
+            "StartTime":"10:00",
+            "EndTime":"16:00",
+            "AddressList":[
+            ]
+        },
+        {
+            //业务打卡地址(驻店)
+            "Id":4,
+            "Type": "Business", 
+            "SubType":"InShop",
+            "TypeValue":"0111111",
+            "StartTime":"11:00",
+            "EndTime":"20:00",
+            "AddressList":[
             ]
         },
         {
             //导购打卡地址
-            "Id": 3, 
+            "Id":5,
+            "Type": "ShoppingGuide",
+            "SubType":"None",
+            "TypeValue":"0111111",
+            "StartTime":"9:00",
+            "EndTime":"17:00",
             "AddressList":[
                 "上海市"
             ]
         }
     ],
     
-    
-    //工作人员信息
-    "MemberInfoList":[
-        {
-            "Name":"仇霞",
-            "Id":9005,
-            "WorkAddress":1,
-            "WorkTimeType":2,
-            "DimissionTime":"2018/4/10"
-        },
-        {
-            "Name":"鲍士华",
-            "Id":3008,
-            "WorkAddress":3,
-            "WorkTimeType":1,
-            "DimissionTime":"9999/1/1"
-        },
-        {
-            "Name":"李晓芳",
-            "Id":6012,
-            "WorkAddress":1,
-            "WorkTimeType":2,
-            "DimissionTime":"9999/1/1"
-        }
-    ],
-    //工作时间类型
-    "MemberWorkTimeList":[
-        {
-            //作一休一
-            "Id":1,
-            "Type":"10",
-            "StartTime":"7:00",
-            "EndTime":"20:00"
-        },
-        {
-            //作五休一
-            "Id":2,
-            "Type":"1111100",
-            "StartTime":"9:00",
-            "EndTime":"17:30"
-        },
-        {
-            //作六休一
-            "Id":3,
-            "Type":"1111110",
-            "StartTime":"9:00",
-            "EndTime":"17:00"
-        }
-    ],
     //国家放假日期
     "HolidayTimeList":[
-        "2018/4/29-2018/5/1"
+        {
+            "Title":"清明节",
+            "StartTime":"2018/4/5",
+            "EndTime":"2018/4/7"
+        },
+        {
+            "Title":"五一节",
+            "StartTime":"2018/4/29",
+            "EndTime":"2018/5/1"
+        }
     ],
     //迟到早退允许时间, 单位分钟
     "ClockThreshold":10

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using AttendanceExportTool.Util;
 using OfficeOpenXml;
-using OfficeOpenXml.Style;
 
 namespace AttendanceExportTool
 {
@@ -20,40 +20,61 @@ namespace AttendanceExportTool
         public string ShopId; //门店编号
         public string Job; //职务名称
 
+        public WorkerType GetWorkerType()
+        {
+            for (int i = 0; i < GlobalDefine.BUSINESS_WORK_TYPE_STRINGS.Length; i++)
+            {
+
+                var type = GlobalDefine.BUSINESS_WORK_TYPE_STRINGS[i];
+                if (GlobalDefine.BUSINESS_WORK_TYPE_STRINGS[i].FirstOrDefault(p => Job.Contains(p)) != null)
+                {
+                    return (WorkerType)i;
+                }
+            }
+
+            return WorkerType.None;
+        }
+
         public override string ToString()
         {
             return
                 $"人员编号:{Id} 人员名称:{Name} 考勤类型:{Type} 签到时间:{SignTime} 经度:{Longitude} 纬度:{Latitude} 定位地址:{Address} 门店名称:{ShopName} 门店编号:{ShopId} 职务名称:{Job}\n";
         }
 
-        public string ToCommentString()
+        public string ToBusinessCommentString()
         {
             return
-                $"人员编号:{Id} 人员名称:{Name} 职务名称:{Job} 签到时间:{SignTime} 定位地址:{Address} 门店名称:{ShopName}\n";
+                $"时间:{SignTime}\n 地址:{Address}\n";
+        }
+
+        public bool IsMorningSign()
+        {
+            return SignTime.Hour <= GlobalDefine.MIDDAY_HOUR;
         }
     }
 
     class WorkTypeInfo
     {
-        public WorkType WorkType;
-        public AttendanceImportData ColorIn;
-        public AttendanceImportData ColorOut;
+        public WorkTimeType WorkTimeType;
+        public string Name = string.Empty;
+        public AttendanceImportData ClockInTime;
+        public AttendanceImportData ClockOffTime;
 
         public string GetComment()
         {
-            string comment = string.Empty;
-            if (ColorIn != null)
+            string comment = Name + "\n";
+            if (ClockInTime != null)
             {
-                comment += string.Format("上班签到: {0}", ColorIn.ToCommentString());
+                comment += string.Format("上班签到: \n{0}", ClockInTime.ToBusinessCommentString());
             }
             else
             {
                 comment += "上班签到: 无\n";
             }
 
-            if (ColorOut != null)
+            if (ClockOffTime != null)
             {
-                comment += string.Format("下班签到: {0}", ColorOut.ToCommentString());
+                comment += string.Format("下班签到: \n{0}", ClockOffTime.ToBusinessCommentString());
             }
             else
             {
@@ -63,7 +84,7 @@ namespace AttendanceExportTool
         }
     }
 
-    enum WorkType
+    enum WorkTimeType
     {
         Normal = 0, //正常上班
         WorkUnClockIn, //上班未打卡
@@ -76,40 +97,21 @@ namespace AttendanceExportTool
         WorkDimission //离职
     }
 
-    class AttendanceDataManager : Singleton<AttendanceDataManager>, IInit
+    class AttendanceDataManager : ExcelReader<AttendanceDataManager>, IInit
     {
-        private readonly Dictionary<string, Dictionary<int, AttendanceImportData>> mClockInDataList = new Dictionary<string, Dictionary<int, AttendanceImportData>>();
-        private readonly Dictionary<string, Dictionary<int, AttendanceImportData>> mClockOffDataList = new Dictionary<string, Dictionary<int, AttendanceImportData>>();
+        private readonly Dictionary<int, Dictionary<int, AttendanceImportData>> mClockInDataList = new Dictionary<int, Dictionary<int, AttendanceImportData>>();
+        private readonly Dictionary<int, Dictionary<int, AttendanceImportData>> mClockOffDataList = new Dictionary<int, Dictionary<int, AttendanceImportData>>();
+        private Dictionary<int, string> mBusinessMemberNameList = new Dictionary<int, string>();
 
-        public void Export()
-        {
-            LogController.Log(GlobalDefine.Instance.Config.ExportPath + " exporting...");
-            if (File.Exists(GlobalDefine.Instance.Config.ExportPath))
-            {
-                File.Delete(GlobalDefine.Instance.Config.ExportPath);
-            }
+        public Dictionary<int, string> BusinessMemberNameList => mBusinessMemberNameList;
 
-            FileInfo newFile = new FileInfo(GlobalDefine.Instance.Config.ExportPath);
-            using (ExcelPackage package = new ExcelPackage())
-            {
-                new SignSheet().Create(package, "2");
-
-                var excelSetting = GlobalDefine.Instance.Config.ExportExcelSetting;
-                package.Workbook.Properties.Title = excelSetting.Title;
-                package.Workbook.Properties.Author = excelSetting.Author;
-                package.Workbook.Properties.Company = excelSetting.Company;
-                package.SaveAs(newFile);
-            }
-            LogController.Log(GlobalDefine.Instance.Config.ExportPath + " export finished.");
-        }
-
-        public int GetWorkCount(string name, WorkType workType)
+        public int GetWorkCount(int id, WorkTimeType workTimeType)
         {
             int count = 0;
             int days = System.Threading.Thread.CurrentThread.CurrentUICulture.Calendar.GetDaysInMonth(DateTime.Now.Year , GlobalDefine.Instance.Config.CurrentMonth);
             for (int i = 0; i < days; i++)
             {
-                if (GetWorkType(name, i + 1).WorkType == workType)
+                if (GetBusinessWorkType(id, i + 1).WorkTimeType == workTimeType)
                 {
                     count++;
                 }
@@ -118,136 +120,89 @@ namespace AttendanceExportTool
             return count;
         }
 
-        public WorkTypeInfo GetWorkType(string name, int day)
+        public WorkTypeInfo GetBusinessWorkType(int id, int day)
         {
-            WorkTypeInfo workTypeInfo = new WorkTypeInfo();
 
-            MemberInfo member = GlobalDefine.Instance.Config.GetMemberInfo(name);
-
-            DateTime dt = new DateTime(DateTime.Now.Year, GlobalDefine.Instance.Config.CurrentMonth, day);
-
-            if (member == null || member.DimissionTime <= dt)
+            WorkTypeInfo workTypeInfo = new WorkTypeInfo
             {
-                workTypeInfo.WorkType = WorkType.WorkDimission;
-                return workTypeInfo;
+                Name = mBusinessMemberNameList[id],
+                ClockInTime = GetClockInData(id, day),
+                ClockOffTime = GetClockOffData(id, day)
+            };
+
+            if (workTypeInfo.ClockInTime == null && workTypeInfo.ClockOffTime == null)
+            {
+                var workAdress =
+                    GlobalDefine.Instance.Config.GetWorkAddress(WorkerType.Business, WorkAddressType.InCompany);
+                workTypeInfo.WorkTimeType = workAdress.IsWeekendTime(day) ? WorkTimeType.WorkRest : WorkTimeType.WorkUnClockInAndOff;
             }
-
-            MemberWorkTime workTime = GlobalDefine.Instance.Config.GetWorkTime(member.WorkTimeType);
-            if (workTime == null)
+            else if (workTypeInfo.ClockInTime == workTypeInfo.ClockOffTime)
             {
-                workTypeInfo.WorkType = WorkType.WorkRest;
-                return workTypeInfo;
-            }
-
-            AttendanceImportData clockInData = GetClockInData(name, day);
-            if (clockInData != null && !IsInSignAddressRange(name, clockInData.Address))
-            {
-                clockInData = null;
-            }
-
-            AttendanceImportData clockOffData = GetClockOffData(name, day);
-            if (clockOffData != null && !IsInSignAddressRange(name, clockOffData.Address))
-            {
-                clockOffData = null;
-            }
-
-
-            workTypeInfo.ColorIn = clockInData;
-            workTypeInfo.ColorOut = clockOffData;
-
-            if (clockInData != null && clockOffData != null && clockInData != clockOffData)
-            {
-                if (workTime.IsClockInDelay(clockInData.SignTime) && workTime.IsClockOffDelay(clockOffData.SignTime))
+                workTypeInfo.WorkTimeType = workTypeInfo.ClockInTime.IsMorningSign() ? WorkTimeType.WorkUnClockOff : WorkTimeType.WorkUnClockIn;
+                if (workTypeInfo.WorkTimeType == WorkTimeType.WorkUnClockIn)
                 {
-                    workTypeInfo.WorkType = WorkType.WorkLateAndLeveaEarly;
-                    return workTypeInfo;
+                    workTypeInfo.ClockInTime = null;
+                }
+                else
+                {
+                    workTypeInfo.ClockOffTime = null;
+                }
+            }
+            else if (workTypeInfo.ClockOffTime != workTypeInfo.ClockInTime)
+            {
+                WorkAddress workAddress =
+                    AttendanceDataManager.Instance.GetBusinessWorkAddress(workTypeInfo.ClockInTime, workTypeInfo.ClockOffTime);
+                if (workAddress.IsClockInDelay(workTypeInfo.ClockInTime.SignTime))
+                {
+                    workTypeInfo.WorkTimeType = WorkTimeType.WorkLate;
                 }
 
-                if (workTime.IsClockInDelay(clockInData.SignTime))
+                if (workAddress.IsClockOffDelay(workTypeInfo.ClockOffTime.SignTime))
                 {
-                    workTypeInfo.WorkType = WorkType.WorkLate;
-                    return workTypeInfo;
+                    workTypeInfo.WorkTimeType = workTypeInfo.WorkTimeType == WorkTimeType.WorkLate ? WorkTimeType.WorkLateAndLeveaEarly : WorkTimeType.WorkLeaveEarly;
                 }
-
-                if (workTime.IsClockOffDelay(clockOffData.SignTime))
-                {
-                    workTypeInfo.WorkType = WorkType.WorkLeaveEarly;
-                    return workTypeInfo;
-                }
-
-                workTypeInfo.WorkType = WorkType.Normal;
-                return workTypeInfo;
             }
-
-            if(clockInData != null && clockOffData != null && clockInData == clockOffData)
-            {
-                if (clockInData.SignTime.Hour < GlobalDefine.MIDDAY)
-                {
-                    workTypeInfo.WorkType = WorkType.WorkUnClockOff;
-                    return workTypeInfo;
-                }
-
-                workTypeInfo.WorkType = WorkType.WorkUnClockIn;
-                return workTypeInfo;
-            }
-
-            if (IsHolidayTime(name, day))
-            {
-                workTypeInfo.WorkType = WorkType.WorkRest;
-                return workTypeInfo;
-            }
-
-            workTypeInfo.WorkType = WorkType.WorkUnClockInAndOff;
             return workTypeInfo;
         }
 
-        private bool IsHolidayTime(string name, int day)
+        public WorkAddress GetBusinessWorkAddress(AttendanceImportData clockInTime,
+            AttendanceImportData clockOffTime)
         {
-            MemberInfo member = GlobalDefine.Instance.Config.GetMemberInfo(name);
-            if (member == null)
+            var workAdress =
+                GlobalDefine.Instance.Config.GetWorkAddress(WorkerType.Business, WorkAddressType.InCompany);
+            if (workAdress.IsInAddressRange(clockInTime.Address) && workAdress.IsInAddressRange(clockOffTime.Address))
             {
-                return true;
-            }
-            MemberWorkTime workTime = GlobalDefine.Instance.Config.GetWorkTime(member.WorkTimeType);
-            if (workTime == null)
-            {
-                return true;
+                return workAdress;
             }
 
-            return workTime.IsHolidayTime(day);
+            if (clockInTime.Address.Substring(0, 9) == clockOffTime.Address.Substring(0, 9))
+            {
+                workAdress =
+                    GlobalDefine.Instance.Config.GetWorkAddress(WorkerType.Business, WorkAddressType.InShop);
+            }
+            else
+            {
+                workAdress =
+                    GlobalDefine.Instance.Config.GetWorkAddress(WorkerType.Business, WorkAddressType.ShopPatrol);
+            }
+
+            return workAdress;
         }
 
-        private bool IsInSignAddressRange(string name, string address)
-        {
-            MemberInfo member = GlobalDefine.Instance.Config.GetMemberInfo(name);
-            if (member == null)
-            {
-                return true;
-            }
-
-            WorkAddress workAddress = GlobalDefine.Instance.Config.GetWorkAddress(member.WorkAddress);
-            if (workAddress == null)
-            {
-                return true;
-            }
-
-            return workAddress.IsInAddressRange(address);
-        }
-
-        private AttendanceImportData GetClockInData(string name, int day)
+        private AttendanceImportData GetClockInData(int id, int day)
         {
             AttendanceImportData data = null;
-            if (mClockInDataList.TryGetValue(name, out var dic))
+            if (mClockInDataList.TryGetValue(id, out var dic))
             {
                 dic.TryGetValue(day, out data);
             }
             return data;
         }
 
-        private AttendanceImportData GetClockOffData(string name, int day)
+        private AttendanceImportData GetClockOffData(int id, int day)
         {
             AttendanceImportData data = null;
-            if (mClockOffDataList.TryGetValue(name, out var dic))
+            if (mClockOffDataList.TryGetValue(id, out var dic))
             {
                 dic.TryGetValue(day, out data);
             }
@@ -255,100 +210,91 @@ namespace AttendanceExportTool
         }
 
 
-        public InitCode Init()
+        protected override string GetPath()
         {
-            try
-            {
-                Load();
-            }
-            catch (Exception e)
-            {
-                LogController.Log(e.ToString());
-                return InitCode.AttendanceDataLoadFailed;
-            }
-
-            return InitCode.Ok;
+            return GlobalDefine.Instance.Config.ImportSignPath;
         }
 
-        private void Load()
+        protected override void Load(ExcelPackage package)
         {
-            FileInfo importFileInfo = new FileInfo(GlobalDefine.Instance.Config.ImportPath);
-            if (!importFileInfo.Exists)
+            ExcelWorksheet worksheet = package.Workbook.Worksheets[1];
+            for (int i = 2; i < worksheet.Dimension.End.Row; i++)
             {
-                LogController.Log(GlobalDefine.Instance.Config.ImportPath + "no exists.");
-                return;
-            }
+                AttendanceImportData rowData = new AttendanceImportData();
+                int col = 1;
+                rowData.Type = worksheet.GetValue<string>(i, col++);
+                rowData.SignTime = worksheet.GetValue<DateTime>(i, col++);
+                rowData.Longitude = worksheet.GetValue<float>(i, col++);
+                rowData.Latitude = worksheet.GetValue<float>(i, col++);
+                rowData.Address = worksheet.GetValue<string>(i, col++);
+                rowData.Id = worksheet.GetValue<int>(i, col++);
+                rowData.Name = worksheet.GetValue<string>(i, col++);
+                rowData.ShopName = worksheet.GetValue<string>(i, col++);
+                rowData.ShopId = worksheet.GetValue<string>(i, col++);
+                rowData.Job = worksheet.GetValue<string>(i, col);
 
-            LogController.Log(GlobalDefine.Instance.Config.ImportPath + "importing...");
-            using (var package = new ExcelPackage(importFileInfo))
-            {
-                ExcelWorksheet worksheet = package.Workbook.Worksheets[1];
-                for (int i = 2; i < worksheet.Dimension.End.Row; i++)
+                if (string.IsNullOrEmpty(rowData.Job))
                 {
-                    AttendanceImportData rowData = new AttendanceImportData();
-                    int col = 1;
-                    rowData.Type = worksheet.GetValue<string>(i, col++);
-                    rowData.SignTime = worksheet.GetValue<DateTime>(i, col++);
-                    rowData.Longitude = worksheet.GetValue<float>(i, col++);
-                    rowData.Latitude = worksheet.GetValue<float>(i, col++);
-                    rowData.Address = worksheet.GetValue<string>(i, col++);
-                    rowData.Id = worksheet.GetValue<int>(i, col++);
-                    rowData.Name = worksheet.GetValue<string>(i, col++);
-                    rowData.ShopName = worksheet.GetValue<string>(i, col++);
-                    rowData.ShopId = worksheet.GetValue<string>(i, col++);
-                    rowData.Job = worksheet.GetValue<string>(i, col);
+                    continue;
+                }
 
-                    if (rowData.SignTime.Month != GlobalDefine.Instance.Config.CurrentMonth)
+                if (rowData.SignTime.Month != GlobalDefine.Instance.Config.CurrentMonth)
+                {
+                    continue;
+                }
+
+                var specialMember = GlobalDefine.Instance.Config.FindSpeicalMember(rowData.Id);
+                if (!mBusinessMemberNameList.ContainsKey(rowData.Id) && (rowData.GetWorkerType() == WorkerType.Business || specialMember != null && specialMember.GetWorkerType() == WorkerType.Business))
+                {
+                    mBusinessMemberNameList.Add(rowData.Id, rowData.Name);
+                }
+
+                LogController.Log(rowData.ToString());
+
+                if (mClockInDataList.TryGetValue(rowData.Id, out var lastData))
+                {
+                    if (lastData.TryGetValue(rowData.SignTime.Day, out var lastAttendanceImportData))
                     {
-                        continue;
-                    }
-
-                    LogController.Log(rowData.ToString());
-
-                    if (mClockInDataList.TryGetValue(rowData.Name, out var lastData))
-                    {
-                        if (lastData.TryGetValue(rowData.SignTime.Day, out var lastAttendanceImportData))
+                        if (lastAttendanceImportData.SignTime >= rowData.SignTime)
                         {
-                            if (lastAttendanceImportData.SignTime >= rowData.SignTime)
-                            {
-                                lastData[rowData.SignTime.Day] = rowData;
-                            }
-                        }
-                        else
-                        {
-                            lastData.Add(rowData.SignTime.Day, rowData);
+                            lastData[rowData.SignTime.Day] = rowData;
                         }
                     }
                     else
                     {
-                        var dic = new Dictionary<int, AttendanceImportData>();
-                        dic.Add(rowData.SignTime.Day, rowData);
-                        mClockInDataList.Add(rowData.Name, dic);
-                    }
-
-                    if (mClockOffDataList.TryGetValue(rowData.Name, out var lastClockOffData))
-                    {
-                        if (lastClockOffData.TryGetValue(rowData.SignTime.Day, out var lastAttendanceImportData))
-                        {
-                            if (lastAttendanceImportData.SignTime <= rowData.SignTime)
-                            {
-                                lastClockOffData[rowData.SignTime.Day] = rowData;
-                            }
-                        }
-                        else
-                        {
-                            lastClockOffData.Add(rowData.SignTime.Day, rowData);
-                        }
-                    }
-                    else
-                    {
-                        var dic = new Dictionary<int, AttendanceImportData>();
-                        dic.Add(rowData.SignTime.Day, rowData);
-                        mClockOffDataList.Add(rowData.Name, dic);
+                        lastData.Add(rowData.SignTime.Day, rowData);
                     }
                 }
+                else
+                {
+                    var dic = new Dictionary<int, AttendanceImportData>();
+                    dic.Add(rowData.SignTime.Day, rowData);
+                    mClockInDataList.Add(rowData.Id, dic);
+                }
+
+                if (mClockOffDataList.TryGetValue(rowData.Id, out var lastClockOffData))
+                {
+                    if (lastClockOffData.TryGetValue(rowData.SignTime.Day, out var lastAttendanceImportData))
+                    {
+                        if (lastAttendanceImportData.SignTime <= rowData.SignTime)
+                        {
+                            lastClockOffData[rowData.SignTime.Day] = rowData;
+                        }
+                    }
+                    else
+                    {
+                        lastClockOffData.Add(rowData.SignTime.Day, rowData);
+                    }
+                }
+                else
+                {
+                    var dic = new Dictionary<int, AttendanceImportData>();
+                    dic.Add(rowData.SignTime.Day, rowData);
+                    mClockOffDataList.Add(rowData.Id, dic);
+                }
             }
-            LogController.Log(GlobalDefine.Instance.Config.ImportPath + "import finished.");
+
+            mBusinessMemberNameList = mBusinessMemberNameList.OrderBy(p => p.Key).ToDictionary(p => p.Key, o => o.Value);
         }
     }
 }

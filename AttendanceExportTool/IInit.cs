@@ -9,8 +9,9 @@ namespace AttendanceExportTool
     enum InitCode
     {
         Ok = 0,
-        AttendanceDataLoadFailed = 100,
         ConfigDataLoadFailed,
+        ExcelInitFailed,
+        ExcelInitPathNoExist,
     }
 
     interface IInit

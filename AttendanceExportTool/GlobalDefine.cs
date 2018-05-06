@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -7,36 +8,51 @@ using Newtonsoft.Json;
 
 namespace AttendanceExportTool
 {
+    enum WorkAddressType
+    {
+        None,
+        InCompany,
+        ShopPatrol,
+        InShop,
+    }
+
+
     class ExportExcelSetInfo
     {
         public string Title;
         public string Author;
         public string Company;
         public int SignTitleFontSize;
-        public int SignCellHeight;
+        public float SignCellHeight;
+        public float SignCellWidth;
         public string SignTitleBackgroundColor;
     }
 
-    class MemberInfo
-    {
-        public string Name;
-        public int Id;
-        public int WorkAddress;
-        public int WorkTimeType;
-        public DateTime DimissionTime;
-    }
-
-    class MemberWorkTime
+    class WorkAddress
     {
         public int Id;
         public string Type;
+        public string SubType;
+        public string TypeValue;
         public string StartTime;
         public string EndTime;
+        public string[] AddressList;
 
-        public bool IsHolidayTime(int day)
+        public bool IsWeekendTime(int day)
         {
-            int index = day % Type.Length;
-            char c = Type[index];
+            if (string.IsNullOrEmpty(TypeValue))
+            {
+                return false;
+            }
+
+            DateTime dt = new DateTime(DateTime.Now.Year, GlobalDefine.Instance.Config.CurrentMonth, day);
+
+            int index = (int)dt.DayOfWeek - 1;
+            if (index < 0)
+            {
+                index = Enum.GetValues(typeof(DayOfWeek)).Length - 1;
+            }
+            char c = TypeValue[index];
             return int.Parse(c.ToString()) == 0;
         }
 
@@ -54,17 +70,11 @@ namespace AttendanceExportTool
         {
             DateTimeFormatInfo dtFormatInfo = new DateTimeFormatInfo();
             dtFormatInfo.ShortDatePattern = "HH:mm";
-            DateTime startTime = DateTime.Parse(StartTime, dtFormatInfo);
-            int daySec = startTime.Hour * 3600 + startTime.Minute * 60;
+            DateTime endTime = DateTime.Parse(EndTime, dtFormatInfo);
+            int daySec = endTime.Hour * 3600 + endTime.Minute * 60;
             int signSec = t.Hour * 3600 + t.Minute * 60 + t.Second;
             return daySec - GlobalDefine.Instance.Config.ClockThreshold * 60 > signSec;
         }
-    }
-
-    class WorkAddress
-    {
-        public int Id;
-        public string[] AddressList;
 
         public bool IsInAddressRange(string address)
         {
@@ -77,55 +87,103 @@ namespace AttendanceExportTool
         }
     }
 
+    class  HolidayTime
+    {
+        public string Title;
+        public DateTime StartTime;
+        public DateTime EndTime;
+
+        public bool IsInHolidayTime(int day)
+        {
+            DateTime currDt = new DateTime(DateTime.Now.Year, GlobalDefine.Instance.Config.CurrentMonth, day);
+
+            if (StartTime <= currDt && EndTime >= currDt)
+            {
+                return true;
+            }
+
+            return false;
+        }
+    }
+
     class ConfigData
     {
         public int CurrentMonth;
-        public string ImportPath;
-        public string ExportPath;
+        public string ImportSignPath;
+        public string ImportMemberPath;
+        public string OverTimePath;
+        public string BusinessExportPath;
+        public string ShoppingGuideExportPath;
         public ExportExcelSetInfo ExportExcelSetting;
+        public SpecialMember[] SpecailMemberList;
         public WorkAddress[] WorkAddress;
-        public MemberInfo[] MemberInfoList;
-        public MemberWorkTime[] MemberWorkTimeList;
-        public string[] HolidayTimeList;
+        public HolidayTime[] HolidayTimeList;
         public int ClockThreshold;
 
-        public MemberInfo GetMemberInfo(string name)
+        public List<WorkAddress> GetWorkAddresses(WorkerType workerType)
         {
-            var member = MemberInfoList.FirstOrDefault(p => p.Name == name);
-            if (member == null)
-            {
-                LogController.Log("Can not find " + name);
-            }
-
-            return member;
+            return WorkAddress.Where(address => address.Type == workerType.ToString()).ToList();
         }
 
-        public WorkAddress GetWorkAddress(int addressId)
+        public WorkAddress GetWorkAddress(WorkerType workerType, WorkAddressType workAddressType)
         {
-            var address = WorkAddress.FirstOrDefault(p => p.Id == addressId);
+            var address = WorkAddress.FirstOrDefault(p => p.Type == workerType.ToString() && p.SubType == workAddressType.ToString());
             if (address == null)
             {
-                LogController.Log(addressId + " work address type error.");
+                LogController.Log(workerType + " " + workAddressType + " work address type error.");
             }
 
             return address;
         }
 
-        public MemberWorkTime GetWorkTime(int timeId)
+        public SpecialMember FindSpeicalMember(int id)
         {
-            var time = MemberWorkTimeList.FirstOrDefault(p => p.Id == timeId);
-            if (time == null)
-            {
-                LogController.Log(timeId + " work time type error.");
-            }
-            return time;
+            return SpecailMemberList.FirstOrDefault(p => p.Id == id);
+        }
+    }
+
+    enum WorkerType
+    {
+        None = -1,
+        Business = 0,
+        Administration,
+        ShoppingGuide,
+    }
+
+    class SpecialMember
+    {
+        public int Id;
+        public string Type;
+
+        public WorkerType GetWorkerType()
+        {
+            return (WorkerType)Enum.Parse(typeof(WorkerType), Type);
         }
     }
 
 
     class GlobalDefine : Singleton<GlobalDefine>, IInit
     {
-        public static string[] WorkTypeStrings =
+        public static readonly string[] SHOPPING_EXCEL_TITLES = new[]
+        {
+            "系统门店",
+            "姓名",
+            "入职时间",
+            "离职时间",
+            "加班日期",
+            "加班",
+            "请假",
+            "考勤备注"
+        };
+
+        public static readonly string[][] BUSINESS_WORK_TYPE_STRINGS =
+        {
+            new []{ "业务", "督导", "市场部" },
+            new []{ "行政主管", "行政助理", "财务", "人事" },
+            new []{ "精英队", "促销流动", "导购员" },
+        };
+
+        public static readonly string[] WORK_TIME_TYPE_STRINGS =
         {
             "上班",
             "上午未报",
@@ -138,20 +196,22 @@ namespace AttendanceExportTool
             "离职"
         };
 
-        public static string[] WorkTypeColor =
+        public static readonly string MONDAY_COLOR = "#FFFF00";
+
+        public static readonly string[] WORK_TYPE_COLOR =
         {
             "#FFFFFF",
-            "#FF99FF",
-            "#FF99FF",
-            "#FF99FF",
+            "#FF66FF",
+            "#FF66FF",
+            "#FF66FF",
             "#99CCFF",
             "#99CCFF",
             "#99CCFF",
             "#FFF2CC",
-            "#C00000"
+            "#B1AAAA"
         };
 
-        public static string[] SignExcelTitle =
+        public static readonly string[] BUSINESS_EXCEL_TITLE =
         {
             "姓名",
             "出勤天数",
@@ -161,9 +221,9 @@ namespace AttendanceExportTool
             "漏报天数",
         };
 
-        public const int MIDDAY = 12;
+        public const int MIDDAY_HOUR = 12;
 
-        public ConfigData Config;
+        internal ConfigData Config { get; set; }
 
         public InitCode Init()
         {

@@ -68,6 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AttendanceDataManager.cs" />
+    <Compile Include="BusinessExcelExporter.cs" />
     <Compile Include="EPPlus\CellStore.cs" />
     <Compile Include="EPPlus\Compatibility\DateTimeExtensions.cs" />
     <Compile Include="EPPlus\Compatibility\SecurityElement.cs" />
@@ -738,8 +739,12 @@
     <Compile Include="EPPlus\VBA\ExcelVBASignature.cs" />
     <Compile Include="EPPlus\XmlHelper.cs" />
     <Compile Include="EPPlus\XmlHelperFactory.cs" />
+    <Compile Include="ExcelReader.cs" />
+    <Compile Include="ExcelWriter.cs" />
     <Compile Include="ExportExcelSheet.cs" />
     <Compile Include="IInit.cs" />
+    <Compile Include="MemberDataManager.cs" />
+    <Compile Include="OvertimeDataManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -753,8 +758,10 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="GlobalDefine.cs" />
+    <Compile Include="ShoppingGuideExporter.cs" />
     <Compile Include="Util\LogController.cs" />
     <Compile Include="Util\Singleton.cs" />
+    <Compile Include="Util\Util.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

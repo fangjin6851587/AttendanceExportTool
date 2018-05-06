@@ -16,7 +16,9 @@ namespace AttendanceExportTool
             List<IInit> initList = new List<IInit>
             {
                 GlobalDefine.Instance, 
-                AttendanceDataManager.Instance
+                AttendanceDataManager.Instance,
+                MemberDataManager.Instance,
+                OvertimeDataManager.Instance,
             };
 
             foreach (var init in initList)
@@ -29,7 +31,15 @@ namespace AttendanceExportTool
                 }
             }
 
-            AttendanceDataManager.Instance.Export();
+            List<ExcelWriter> excelWriters = new List<ExcelWriter>
+            {
+                new BusinessExcelExporter(),
+                new ShoppingGuideExporter(),
+            };
+            foreach (ExcelWriter excelWriter in excelWriters)
+            {
+                excelWriter.Save();
+            }
 
             LogController.Log("===============================Init success=================================");
         }

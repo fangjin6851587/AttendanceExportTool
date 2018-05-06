@@ -8,3 +8,13 @@ C:\Project\AttendanceExportTool\AttendanceExportTool\bin\Debug\AttendanceExportT
 C:\Project\AttendanceExportTool\AttendanceExportTool\obj\Debug\AttendanceExportTool.exe
 C:\Project\AttendanceExportTool\AttendanceExportTool\obj\Debug\AttendanceExportTool.pdb
 C:\Project\AttendanceExportTool\AttendanceExportTool\bin\Debug\Newtonsoft.Json.dll
+D:\Project\AttendanceExportTool\AttendanceExportTool\bin\Debug\AttendanceExportTool.exe.config
+D:\Project\AttendanceExportTool\AttendanceExportTool\bin\Debug\AttendanceExportTool.exe
+D:\Project\AttendanceExportTool\AttendanceExportTool\bin\Debug\AttendanceExportTool.pdb
+D:\Project\AttendanceExportTool\AttendanceExportTool\bin\Debug\Newtonsoft.Json.dll
+D:\Project\AttendanceExportTool\AttendanceExportTool\obj\Debug\AttendanceExportTool.csprojResolveAssemblyReference.cache
+D:\Project\AttendanceExportTool\AttendanceExportTool\obj\Debug\AttendanceExportTool.Properties.Resources.resources
+D:\Project\AttendanceExportTool\AttendanceExportTool\obj\Debug\AttendanceExportTool.csproj.GenerateResource.Cache
+D:\Project\AttendanceExportTool\AttendanceExportTool\obj\Debug\AttendanceExportTool.csproj.CoreCompileInputs.cache
+D:\Project\AttendanceExportTool\AttendanceExportTool\obj\Debug\AttendanceExportTool.exe
+D:\Project\AttendanceExportTool\AttendanceExportTool\obj\Debug\AttendanceExportTool.pdb
