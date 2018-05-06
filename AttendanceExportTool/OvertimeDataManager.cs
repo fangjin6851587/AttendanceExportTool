@@ -20,8 +20,24 @@ namespace AttendanceExportTool
     {
         public string ShopType;
         public string ShoppingName;
+        public string Name;
         public List<DateTime> OverTime = new List<DateTime>();
         public float OverTimeMoney;
+
+        public string GetOvertimeDateTimeString()
+        {
+            return String.Join(",", OverTime.Select(p => p.Day));
+        }
+
+        public List<DateTime> GetOvertimeList()
+        {
+            return OverTime;
+        }
+
+        public float GetOvertime()
+        {
+            return OverTimeMoney / 100;
+        }
     }
 
     class OvertimeDataManager : ExcelReader<OvertimeDataManager>, IInit
@@ -38,11 +54,11 @@ namespace AttendanceExportTool
             return mOvertimeDataList.Where(p => p.ShopType == shoppingType).ToList();
         }
 
-        public Dictionary<string, MemberOvertimeData> GetOvertimeShoppingNameListByShoppingType(string shoppingType)
+        public Dictionary<string, MemberOvertimeData> GetOvertimeShoppingNameList()
         {
             Dictionary<string, MemberOvertimeData> list = new Dictionary<string, MemberOvertimeData>();
 
-            foreach (var overtimeData in GetOvertimeDataByShoppingType(shoppingType))
+            foreach (var overtimeData in mOvertimeDataList)
             {
                 if (!list.TryGetValue(overtimeData.Name, out var memberOvertime))
                 {
@@ -50,9 +66,10 @@ namespace AttendanceExportTool
                     list.Add(overtimeData.Name, memberOvertime);
                 }
 
+                memberOvertime.Name = overtimeData.Name;
                 memberOvertime.ShopType = overtimeData.ShopType;
                 memberOvertime.ShoppingName = overtimeData.ShoppingName;
-                if (overtimeData.OverTime > DateTime.MinValue)
+                if (overtimeData.OverTime.Year == DateTime.Now.Year && overtimeData.OverTime.Month == GlobalDefine.Instance.Config.CurrentMonth)
                 {
                     memberOvertime.OverTime.Add(overtimeData.OverTime);
                 }

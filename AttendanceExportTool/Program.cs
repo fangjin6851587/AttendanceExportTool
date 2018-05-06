@@ -19,6 +19,7 @@ namespace AttendanceExportTool
                 AttendanceDataManager.Instance,
                 MemberDataManager.Instance,
                 OvertimeDataManager.Instance,
+                MemberPayDataManager.Instance,
             };
 
             foreach (var init in initList)
@@ -35,6 +36,7 @@ namespace AttendanceExportTool
             {
                 new BusinessExcelExporter(),
                 new ShoppingGuideExporter(),
+                new AdministrativeExport(),
             };
             foreach (ExcelWriter excelWriter in excelWriters)
             {

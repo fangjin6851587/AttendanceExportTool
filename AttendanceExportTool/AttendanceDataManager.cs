@@ -47,6 +47,12 @@ namespace AttendanceExportTool
                 $"时间:{SignTime}\n 地址:{Address}\n";
         }
 
+        public string ToShoppingGuideCommentString()
+        {
+            return
+                $"时间:{SignTime}\n";
+        }
+
         public bool IsMorningSign()
         {
             return SignTime.Hour <= GlobalDefine.MIDDAY_HOUR;
@@ -102,10 +108,99 @@ namespace AttendanceExportTool
         private readonly Dictionary<int, Dictionary<int, AttendanceImportData>> mClockInDataList = new Dictionary<int, Dictionary<int, AttendanceImportData>>();
         private readonly Dictionary<int, Dictionary<int, AttendanceImportData>> mClockOffDataList = new Dictionary<int, Dictionary<int, AttendanceImportData>>();
         private Dictionary<int, string> mBusinessMemberNameList = new Dictionary<int, string>();
+        private Dictionary<int, string> mAdministrativeMemberNameList = new Dictionary<int, string>();
+        private Dictionary<string, int> mMemberNameList = new Dictionary<string, int>();
 
         public Dictionary<int, string> BusinessMemberNameList => mBusinessMemberNameList;
+        public Dictionary<string, int> MemberNameList => mMemberNameList;
 
-        public int GetWorkCount(int id, WorkTimeType workTimeType)
+        public Dictionary<int, string> AdministrativeMemberNameList => mAdministrativeMemberNameList;
+
+
+
+        public List<int> GetUnClockTimeList(string name)
+        {
+            List<int> unClockTimeList = new List<int>();
+            int days = System.Threading.Thread.CurrentThread.CurrentUICulture.Calendar.GetDaysInMonth(DateTime.Now.Year , GlobalDefine.Instance.Config.CurrentMonth);
+
+            if (mMemberNameList.ContainsKey(name))
+            {
+                var signData = mClockInDataList[mMemberNameList[name]];
+                for (int i = 1; i <= days; i++)
+                {
+                    if (!signData.ContainsKey(i))
+                    {
+                        unClockTimeList.Add(i);
+                    }
+                }
+            }
+            return unClockTimeList;
+        }
+
+        public List<int> GetSignTimeList(string name)
+        {
+            List<int> signDayList = new List<int>();
+            if (mMemberNameList.ContainsKey(name))
+            {
+                var signData = mClockInDataList[mMemberNameList[name]];
+                signDayList.AddRange(signData.Keys);
+            }
+            return signDayList;
+        }
+
+        public List<AttendanceImportData> GetUnClockInTimeList(string name)
+        {
+            List<AttendanceImportData> unClockTimeList = new List<AttendanceImportData>();
+            int days = System.Threading.Thread.CurrentThread.CurrentUICulture.Calendar.GetDaysInMonth(DateTime.Now.Year, GlobalDefine.Instance.Config.CurrentMonth);
+
+            if (mMemberNameList.ContainsKey(name))
+            {
+                var signClockInData = mClockInDataList[mMemberNameList[name]];
+                var signClockOffData = mClockOffDataList[mMemberNameList[name]];
+                for (int i = 1; i <= days; i++)
+                {
+                    if (signClockInData.ContainsKey(i))
+                    {
+                        AttendanceImportData clockInData = signClockInData[i];
+                        AttendanceImportData clockOffData = signClockOffData[i];
+                        if (clockInData != null && clockOffData == clockInData && !clockOffData.IsMorningSign())
+                        {
+                            unClockTimeList.Add(clockInData);
+                        }
+                    }
+                }
+            }
+
+            return unClockTimeList;
+        }
+
+        public List<AttendanceImportData> GetUnClockOffTimeList(string name)
+        {
+            List<AttendanceImportData> unClockTimeList = new List<AttendanceImportData>();
+            int days = System.Threading.Thread.CurrentThread.CurrentUICulture.Calendar.GetDaysInMonth(DateTime.Now.Year, GlobalDefine.Instance.Config.CurrentMonth);
+
+            if (mMemberNameList.ContainsKey(name))
+            {
+                var signClockInData = mClockInDataList[mMemberNameList[name]];
+                var signClockOffData = mClockOffDataList[mMemberNameList[name]];
+                for (int i = 1; i <= days; i++)
+                {
+                    if (signClockInData.ContainsKey(i))
+                    {
+                        AttendanceImportData clockInData = signClockInData[i];
+                        AttendanceImportData clockOffData = signClockOffData[i];
+                        if (clockInData != null && clockOffData == clockInData && clockInData.IsMorningSign())
+                        {
+                            unClockTimeList.Add(clockInData);
+                        }
+                    }
+                }
+            }
+
+            return unClockTimeList;
+        }
+
+        public int GetBusinessWorkCount(int id, WorkTimeType workTimeType)
         {
             int count = 0;
             int days = System.Threading.Thread.CurrentThread.CurrentUICulture.Calendar.GetDaysInMonth(DateTime.Now.Year , GlobalDefine.Instance.Config.CurrentMonth);
@@ -157,6 +252,66 @@ namespace AttendanceExportTool
                     workTypeInfo.WorkTimeType = WorkTimeType.WorkLate;
                 }
 
+                if (workAddress.IsClockOffDelay(workTypeInfo.ClockOffTime.SignTime))
+                {
+                    workTypeInfo.WorkTimeType = workTypeInfo.WorkTimeType == WorkTimeType.WorkLate ? WorkTimeType.WorkLateAndLeveaEarly : WorkTimeType.WorkLeaveEarly;
+                }
+            }
+            return workTypeInfo;
+        }
+
+        public WorkTypeInfo GetAdministrationWorkType(int id, int day)
+        {
+            WorkTypeInfo workTypeInfo = new WorkTypeInfo
+            {
+                Name = mAdministrativeMemberNameList[id],
+                ClockInTime = GetClockInData(id, day),
+                ClockOffTime = GetClockOffData(id, day)
+            };
+
+            var workAddress =
+                GlobalDefine.Instance.Config.GetWorkAddress(WorkerType.Administration, WorkAddressType.None);
+
+            if (workTypeInfo.ClockInTime != null && !workAddress.IsInAddressRange(workTypeInfo.ClockInTime.Address))
+            {
+                workTypeInfo.ClockInTime = null;
+            }
+
+            if (workTypeInfo.ClockOffTime != null && !workAddress.IsInAddressRange(workTypeInfo.ClockOffTime.Address))
+            {
+                workTypeInfo.ClockOffTime = null;
+            }
+
+            if (workTypeInfo.ClockInTime == null && workTypeInfo.ClockOffTime == null)
+            {
+                workTypeInfo.WorkTimeType = workAddress.IsWeekendTime(day) ? WorkTimeType.WorkRest : WorkTimeType.WorkUnClockInAndOff;
+            }
+            else if (workTypeInfo.ClockInTime == workTypeInfo.ClockOffTime)
+            {
+                workTypeInfo.WorkTimeType = workTypeInfo.ClockInTime.IsMorningSign() ? WorkTimeType.WorkUnClockOff : WorkTimeType.WorkUnClockIn;
+                if (workTypeInfo.WorkTimeType == WorkTimeType.WorkUnClockIn)
+                {
+                    workTypeInfo.ClockInTime = null;
+                }
+                else
+                {
+                    workTypeInfo.ClockOffTime = null;
+                }
+            }
+            else if (workTypeInfo.ClockInTime == null)
+            {
+                workTypeInfo.WorkTimeType = WorkTimeType.WorkUnClockIn;
+            }
+            else if (workTypeInfo.ClockOffTime == null)
+            {
+                workTypeInfo.WorkTimeType = WorkTimeType.WorkUnClockOff;
+            }
+            else if (workTypeInfo.ClockOffTime != workTypeInfo.ClockInTime)
+            {
+                if (workAddress.IsClockInDelay(workTypeInfo.ClockInTime.SignTime))
+                {
+                    workTypeInfo.WorkTimeType = WorkTimeType.WorkLate;
+                }
                 if (workAddress.IsClockOffDelay(workTypeInfo.ClockOffTime.SignTime))
                 {
                     workTypeInfo.WorkTimeType = workTypeInfo.WorkTimeType == WorkTimeType.WorkLate ? WorkTimeType.WorkLateAndLeveaEarly : WorkTimeType.WorkLeaveEarly;
@@ -247,6 +402,16 @@ namespace AttendanceExportTool
                 if (!mBusinessMemberNameList.ContainsKey(rowData.Id) && (rowData.GetWorkerType() == WorkerType.Business || specialMember != null && specialMember.GetWorkerType() == WorkerType.Business))
                 {
                     mBusinessMemberNameList.Add(rowData.Id, rowData.Name);
+                }
+
+                if (!mAdministrativeMemberNameList.ContainsKey(rowData.Id) && (rowData.GetWorkerType() == WorkerType.Administration || specialMember != null && specialMember.GetWorkerType() == WorkerType.Administration))
+                {
+                    mAdministrativeMemberNameList.Add(rowData.Id, rowData.Name);
+                }
+
+                if (!mMemberNameList.ContainsKey(rowData.Name))
+                {
+                    mMemberNameList.Add(rowData.Name, rowData.Id);
                 }
 
                 LogController.Log(rowData.ToString());

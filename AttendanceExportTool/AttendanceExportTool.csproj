@@ -67,6 +67,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AdministrativeExport.cs" />
     <Compile Include="AttendanceDataManager.cs" />
     <Compile Include="BusinessExcelExporter.cs" />
     <Compile Include="EPPlus\CellStore.cs" />
@@ -744,6 +745,7 @@
     <Compile Include="ExportExcelSheet.cs" />
     <Compile Include="IInit.cs" />
     <Compile Include="MemberDataManager.cs" />
+    <Compile Include="MemberPayDataManager.cs" />
     <Compile Include="OvertimeDataManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

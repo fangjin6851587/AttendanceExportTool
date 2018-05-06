@@ -112,8 +112,10 @@ namespace AttendanceExportTool
         public string ImportSignPath;
         public string ImportMemberPath;
         public string OverTimePath;
+        public string[] PayPathList;
         public string BusinessExportPath;
         public string ShoppingGuideExportPath;
+        public string AdministrativeExportPath;
         public ExportExcelSetInfo ExportExcelSetting;
         public SpecialMember[] SpecailMemberList;
         public WorkAddress[] WorkAddress;
@@ -164,13 +166,26 @@ namespace AttendanceExportTool
 
     class GlobalDefine : Singleton<GlobalDefine>, IInit
     {
+        public static readonly string[] WORK_TYPE_STRINGS = new[]
+        {
+            "做六休一",
+            "做一休一",
+            "做五休二",
+        };
+
+        public static readonly int[] WORK_TYPE_DAY = new[]
+        {
+            4,
+            15,
+            8,
+        };
+
         public static readonly string[] SHOPPING_EXCEL_TITLES = new[]
         {
-            "系统门店",
             "姓名",
+            "上班类型",
             "入职时间",
             "离职时间",
-            "加班日期",
             "加班",
             "请假",
             "考勤备注"

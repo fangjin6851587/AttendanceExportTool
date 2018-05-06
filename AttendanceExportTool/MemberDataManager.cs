@@ -49,6 +49,20 @@ namespace AttendanceExportTool
 
         private Dictionary<int, MemberInfo> mShoppingGuideList = new Dictionary<int, MemberInfo>();
 
+        public MemberInfo GetShoppingGuideMemberInfo(string name)
+        {
+            foreach (var member in mShoppingGuideList.Values)
+            {
+                if (member.Name == name)
+                {
+                    return member;
+                }
+            }
+
+            LogController.Log(name + " can not find in shopping guide member list.");
+            return null;
+        }
+
         protected override string GetPath()
         {
             return GlobalDefine.Instance.Config.ImportMemberPath;

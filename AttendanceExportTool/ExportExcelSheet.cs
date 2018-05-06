@@ -52,19 +52,19 @@ namespace AttendanceExportTool
                 cell.Value = AttendanceDataManager.Instance.BusinessMemberNameList[key];
                 cell.AddComment("人员编号: " + key, config.ExportExcelSetting.Author);
                 cell = sheet.Cells[memberIndex + 2, col++];
-                int num = AttendanceDataManager.Instance.GetWorkCount(key, WorkTimeType.Normal) +
-                          AttendanceDataManager.Instance.GetWorkCount(key, WorkTimeType.WorkLeaveEarly) +
-                          AttendanceDataManager.Instance.GetWorkCount(key, WorkTimeType.WorkLate) +
-                          AttendanceDataManager.Instance.GetWorkCount(key, WorkTimeType.WorkLateAndLeveaEarly) +
-                          AttendanceDataManager.Instance.GetWorkCount(key, WorkTimeType.WorkUnClockIn) +
-                          AttendanceDataManager.Instance.GetWorkCount(key, WorkTimeType.WorkUnClockOff);
+                int num = AttendanceDataManager.Instance.GetBusinessWorkCount(key, WorkTimeType.Normal) +
+                          AttendanceDataManager.Instance.GetBusinessWorkCount(key, WorkTimeType.WorkLeaveEarly) +
+                          AttendanceDataManager.Instance.GetBusinessWorkCount(key, WorkTimeType.WorkLate) +
+                          AttendanceDataManager.Instance.GetBusinessWorkCount(key, WorkTimeType.WorkLateAndLeveaEarly) +
+                          AttendanceDataManager.Instance.GetBusinessWorkCount(key, WorkTimeType.WorkUnClockIn) +
+                          AttendanceDataManager.Instance.GetBusinessWorkCount(key, WorkTimeType.WorkUnClockOff);
                 if (num > 0)
                 {
                     cell.Value = num;
                 }
 
                 cell = sheet.Cells[memberIndex + 2, col++];
-                num = AttendanceDataManager.Instance.GetWorkCount(key, WorkTimeType.WorkRest) + AttendanceDataManager.Instance.GetWorkCount(key, WorkTimeType.WorkUnClockInAndOff);
+                num = AttendanceDataManager.Instance.GetBusinessWorkCount(key, WorkTimeType.WorkRest) + AttendanceDataManager.Instance.GetBusinessWorkCount(key, WorkTimeType.WorkUnClockInAndOff);
                 if (num > 0)
                 {
                     cell.Value = num;
@@ -78,18 +78,18 @@ namespace AttendanceExportTool
                 }
 
                 cell = sheet.Cells[memberIndex + 2, col++];
-                num = AttendanceDataManager.Instance.GetWorkCount(key, WorkTimeType.WorkLeaveEarly) +
-                      AttendanceDataManager.Instance.GetWorkCount(key, WorkTimeType.WorkLate) +
-                      AttendanceDataManager.Instance.GetWorkCount(key, WorkTimeType.WorkLateAndLeveaEarly);
+                num = AttendanceDataManager.Instance.GetBusinessWorkCount(key, WorkTimeType.WorkLeaveEarly) +
+                      AttendanceDataManager.Instance.GetBusinessWorkCount(key, WorkTimeType.WorkLate) +
+                      AttendanceDataManager.Instance.GetBusinessWorkCount(key, WorkTimeType.WorkLateAndLeveaEarly);
                 if (num > 0)
                 {
                     cell.Value = num;
                 }
 
                 cell = sheet.Cells[memberIndex + 2, col];
-                num = AttendanceDataManager.Instance.GetWorkCount(key, WorkTimeType.WorkUnClockIn) +
-                      AttendanceDataManager.Instance.GetWorkCount(key, WorkTimeType.WorkUnClockOff) +
-                      AttendanceDataManager.Instance.GetWorkCount(key, WorkTimeType.WorkUnClockInAndOff);
+                num = AttendanceDataManager.Instance.GetBusinessWorkCount(key, WorkTimeType.WorkUnClockIn) +
+                      AttendanceDataManager.Instance.GetBusinessWorkCount(key, WorkTimeType.WorkUnClockOff) +
+                      AttendanceDataManager.Instance.GetBusinessWorkCount(key, WorkTimeType.WorkUnClockInAndOff);
                 if (num > 0)
                 {
                     cell.Value = num;
