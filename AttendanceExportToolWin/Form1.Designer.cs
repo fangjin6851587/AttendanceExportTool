@@ -221,7 +221,6 @@ namespace AttendanceExportToolWin
             // 
             this.openExcelFileDialog.Filter = "表格文件 (*.xlsx)|*.xlsx";
             this.openExcelFileDialog.Title = "表格选择";
-            this.openExcelFileDialog.CheckFileExists = true;
             // 
             // AttendanceExportWindow
             // 

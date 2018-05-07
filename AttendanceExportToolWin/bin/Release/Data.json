@@ -1,0 +1,126 @@
+{
+    //当前月份
+    "CurrentMonth": 4,
+    //万信达导出数据路径
+    "ImportSignPath": "导入表格/2018.04万信达导出数据.xlsx",
+    //人事档案
+    "ImportMemberPath": "导入表格/人事档案-万信达.xlsx",
+    //加班记录
+    "OverTimePath": "导入表格/加班记录2018.04.xlsx",
+    //工资表
+    "PayPathList": 
+    [
+        "导入表格/大润发4月促销员工资信息表.xlsx",
+        "导入表格/家乐福4月促销员工资信息表.xlsx",
+        "导入表格/外区家乐福4月促销员工资信息表.xlsx"
+    ],
+    //业务人员导出数据表格路径
+    "BusinessExportPath": "销售部门考勤明细表.xlsx",
+    //导购人员导出数据表格路径
+    "ShoppingGuideExportPath": "导购考勤明细表.xlsx",
+    //行政人员导出数据表格路径
+    "AdministrativeExportPath":"行政部门考勤明细表.xlsx",
+    
+    "ExportExcelSetting":{
+        "Title":"销售部考勤明细表",
+        "Author":"李晓芳",
+        "Company":"丽洁 Inc.",
+        "SignTitleFontSize": 11,
+        "SignCellHeight": 30,
+        "SignCellWidth": 6.5,
+        "SignTitleBackgroundColor": "#FFFFE0"
+    },
+    
+    "SpecailMemberList":[
+        {
+            "Id":9011,
+            "Type":"Business"
+        }
+    ],
+    
+    //打卡签到地址
+    "WorkAddress":[
+        {
+            //行政打卡地址
+            "Id":1,
+            "Type": "Administration", 
+            "SubType":"None",
+            "TypeValue":"1111100",
+            "StartTime":"9:00",
+            "EndTime":"17:30",
+            "AddressList":[
+                "联航路",
+                "外环西路",
+                "三达支路",
+                "恒南路",
+                "恒西路"
+            ]
+        },
+        {
+            //业务打卡地址(在公司)
+            "Id":2,
+            "Type": "Business", 
+            "SubType":"InCompany",
+            "TypeValue":"0111111",
+            "StartTime":"9:00",
+            "EndTime":"17:30",
+            "AddressList":[
+                "联航路",
+                "外环西路",
+                "三达支路",
+                "恒南路",
+                "恒西路"
+            ]
+        },
+        {
+            //业务打卡地址(巡店)
+            "Id":3,
+            "Type": "Business", 
+            "SubType":"ShopPatrol",
+            "TypeValue":"0111111",
+            "StartTime":"10:00",
+            "EndTime":"16:00",
+            "AddressList":[
+            ]
+        },
+        {
+            //业务打卡地址(驻店)
+            "Id":4,
+            "Type": "Business", 
+            "SubType":"InShop",
+            "TypeValue":"0111111",
+            "StartTime":"11:00",
+            "EndTime":"20:00",
+            "AddressList":[
+            ]
+        },
+        {
+            //导购打卡地址
+            "Id":5,
+            "Type": "ShoppingGuide",
+            "SubType":"None",
+            "TypeValue":"0111111",
+            "StartTime":"9:00",
+            "EndTime":"17:00",
+            "AddressList":[
+                "上海市"
+            ]
+        }
+    ],
+    
+    //国家放假日期
+    "HolidayTimeList":[
+        {
+            "Title":"清明节",
+            "StartTime":"2018/4/5",
+            "EndTime":"2018/4/7"
+        },
+        {
+            "Title":"五一节",
+            "StartTime":"2018/4/29",
+            "EndTime":"2018/5/1"
+        }
+    ],
+    //迟到早退允许时间, 单位分钟
+    "ClockThreshold":10
+}
