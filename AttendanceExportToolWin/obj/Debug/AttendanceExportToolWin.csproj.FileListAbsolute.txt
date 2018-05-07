@@ -1,0 +1,11 @@
+C:\Project\AttendanceExportToolWin\AttendanceExportToolWin\bin\Debug\AttendanceExportToolWin.exe.config
+C:\Project\AttendanceExportToolWin\AttendanceExportToolWin\bin\Debug\AttendanceExportToolWin.exe
+C:\Project\AttendanceExportToolWin\AttendanceExportToolWin\bin\Debug\AttendanceExportToolWin.pdb
+C:\Project\AttendanceExportToolWin\AttendanceExportToolWin\obj\Debug\AttendanceExportToolWin.csprojResolveAssemblyReference.cache
+C:\Project\AttendanceExportToolWin\AttendanceExportToolWin\obj\Debug\AttendanceExportToolWin.AttendanceExportWindow.resources
+C:\Project\AttendanceExportToolWin\AttendanceExportToolWin\obj\Debug\AttendanceExportToolWin.Properties.Resources.resources
+C:\Project\AttendanceExportToolWin\AttendanceExportToolWin\obj\Debug\AttendanceExportToolWin.csproj.GenerateResource.Cache
+C:\Project\AttendanceExportToolWin\AttendanceExportToolWin\obj\Debug\AttendanceExportToolWin.csproj.CoreCompileInputs.cache
+C:\Project\AttendanceExportToolWin\AttendanceExportToolWin\obj\Debug\AttendanceExportToolWin.exe
+C:\Project\AttendanceExportToolWin\AttendanceExportToolWin\obj\Debug\AttendanceExportToolWin.pdb
+C:\Project\AttendanceExportToolWin\AttendanceExportToolWin\bin\Debug\Newtonsoft.Json.dll
