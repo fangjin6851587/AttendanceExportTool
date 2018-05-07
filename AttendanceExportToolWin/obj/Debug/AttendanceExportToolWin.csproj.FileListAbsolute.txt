@@ -20,3 +20,4 @@ C:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Debug\AttendanceExpo
 C:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Debug\AttendanceExportToolWin.csproj.CoreCompileInputs.cache
 C:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Debug\AttendanceExportToolWin.exe
 C:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Debug\AttendanceExportToolWin.pdb
+C:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Debug\AttendanceExportToolWin.ProgressForm.resources

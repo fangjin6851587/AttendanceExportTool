@@ -8,3 +8,4 @@ C:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Release\AttendanceEx
 C:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Release\AttendanceExportToolWin.csproj.CoreCompileInputs.cache
 C:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Release\AttendanceExportToolWin.exe
 C:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Release\AttendanceExportToolWin.pdb
+C:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Release\AttendanceExportToolWin.csprojResolveAssemblyReference.cache

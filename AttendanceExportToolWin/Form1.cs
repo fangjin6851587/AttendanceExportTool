@@ -14,11 +14,105 @@ namespace AttendanceExportToolWin
 {
     public partial class AttendanceExportWindow : Form
     {
+
+        private BackgroundWorker bkWorker = new BackgroundWorker();
+        private ProgressForm notifyForm = new ProgressForm();
+
         public AttendanceExportWindow()
         {
             InitializeComponent();
 
+            CheckForIllegalCrossThreadCalls = false;
+            bkWorker.WorkerReportsProgress = true;  
+            bkWorker.DoWork += new DoWorkEventHandler(DoWork);  
+            bkWorker.ProgressChanged += new ProgressChangedEventHandler(ProgessChanged);  
+            bkWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(CompleteWork);  
+
         }
+
+        private void CompleteWork(object sender, RunWorkerCompletedEventArgs e)
+        {
+            notifyForm.Close();
+            int result = (int)e.Result;
+            if (result == 0)
+            {
+                MessageBox.Show("导出成功.");
+            }
+            else if (result == 1)
+            {
+                MessageBox.Show("表格数据读取失败.");
+            }
+            else if (result == 2)
+            {
+                MessageBox.Show("表格数据导出失败.");
+            }
+        }
+
+        private void ProgessChanged(object sender, ProgressChangedEventArgs e)
+        {
+            notifyForm.SetNotifyInfo(e.ProgressPercentage, "处理进度:" + Convert.ToString(e.ProgressPercentage) + "%");
+        }
+
+        private void DoWork(object sender, DoWorkEventArgs e)
+        {
+            e.Result = ProcessProgress(bkWorker, e);
+        }
+
+        private int ProcessProgress(object sender, DoWorkEventArgs e)  
+        {  
+            List<IInit> initList = new List<IInit>
+            {
+                AttendanceDataManager.Instance,
+                MemberDataManager.Instance,
+                OvertimeDataManager.Instance,
+                MemberPayDataManager.Instance,
+            };
+
+            List<ExcelWriter> excelWriters = new List<ExcelWriter>
+            {
+                new BusinessExcelExporter(),
+                new ShoppingGuideExporter(),
+                new AdministrativeExport(),
+            };
+
+            int totalProgress = initList.Count + excelWriters.Count;
+
+            for (int i = 0; i < totalProgress; i++)
+            {
+                if (i < initList.Count)
+                {
+                    InitCode code = initList[i].Init();
+                    if (code != InitCode.Ok)
+                    {
+                        LogController.Log("Excel export failed code = " + code);
+                        return 1;
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        excelWriters[i - initList.Count].Save();
+                    }
+                    catch (Exception exception)
+                    {
+                        Console.WriteLine(exception);
+                        return 2;
+                    }
+                }
+
+                if (bkWorker.CancellationPending)  
+                {  
+                    e.Cancel = true;  
+                    return -1;  
+                }
+
+                bkWorker.ReportProgress((int) ((float)(i + 1) / totalProgress * 100));  
+                System.Threading.Thread.Sleep(1);
+            }
+  
+            return 0;  
+        }  
 
         private void AttendanceExportWindow_Load(object sender, EventArgs e)
         {
@@ -31,7 +125,6 @@ namespace AttendanceExportToolWin
                 }
                 return;
             }
-
             UpdateCurrentMonth();
         }
 
@@ -112,47 +205,9 @@ namespace AttendanceExportToolWin
                 return;
             }
 
-            List<IInit> initList = new List<IInit>
-            {
-                AttendanceDataManager.Instance,
-                MemberDataManager.Instance,
-                OvertimeDataManager.Instance,
-                MemberPayDataManager.Instance,
-            };
-
-            foreach (var init in initList)
-            {
-                InitCode code = init.Init();
-                if (code != InitCode.Ok)
-                {
-                    LogController.Log("Excel export failed code = " + code);
-                    MessageBox.Show("表格数据读取失败.");
-                    return;
-                }
-            }
-
-            try
-            {
-                List<ExcelWriter> excelWriters = new List<ExcelWriter>
-                {
-                    new BusinessExcelExporter(),
-                    new ShoppingGuideExporter(),
-                    new AdministrativeExport(),
-                };
-
-                foreach (var excelWriter in excelWriters)
-                {
-                    excelWriter.Save();
-                }
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine(exception);
-                MessageBox.Show("导出失败.");
-                throw;
-            }
-
-            MessageBox.Show("导出成功.");
+            notifyForm.StartPosition = FormStartPosition.CenterParent;  
+            bkWorker.RunWorkerAsync();  
+            notifyForm.ShowDialog();  
         }
 
         private void ExportDirCick(object sender, EventArgs e)
