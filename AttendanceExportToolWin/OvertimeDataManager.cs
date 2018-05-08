@@ -69,7 +69,7 @@ namespace AttendanceExportTool
                 memberOvertime.Name = overtimeData.Name;
                 memberOvertime.ShopType = overtimeData.ShopType;
                 memberOvertime.ShoppingName = overtimeData.ShoppingName;
-                if (overtimeData.OverTime.Year == DateTime.Now.Year && overtimeData.OverTime.Month == GlobalDefine.Instance.Config.CurrentMonth)
+                if (overtimeData.OverTime.Year == DateTime.Now.Year && overtimeData.OverTime.Month == GlobalDefine.Instance.Config.CurrentMonth && overtimeData.OverTimeMoney > 0)
                 {
                     memberOvertime.OverTime.Add(overtimeData.OverTime);
                 }

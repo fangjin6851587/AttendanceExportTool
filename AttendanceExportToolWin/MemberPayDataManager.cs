@@ -74,7 +74,7 @@ namespace AttendanceExportTool
                 int workTypeColumn = 0;
                 for (int i = 1; i <= worksheet.Dimension.End.Row; i++)
                 {
-                    for (int j = 1; j < worksheet.Dimension.End.Column; j++)
+                    for (int j = 1; j <= worksheet.Dimension.End.Column; j++)
                     {
                         var value = worksheet.Cells[i, j].Value;
                         if (value == null)
@@ -101,7 +101,7 @@ namespace AttendanceExportTool
 
                 if (rowStart > 0)
                 {
-                    for (int i = rowStart; i < worksheet.Dimension.End.Row; i++)
+                    for (int i = rowStart; i <= worksheet.Dimension.End.Row; i++)
                     {
                         var cell = worksheet.Cells[i, nameColumn];
 
@@ -112,6 +112,12 @@ namespace AttendanceExportTool
 
                         MemberPayData memberPay = new MemberPayData();
                         memberPay.Name = cell.GetValue<string>();
+
+                        if (memberPay.Name == "姓名")
+                        {
+                            continue;
+                        }
+
                         cell = worksheet.Cells[i, workTypeColumn];
                         memberPay.WorkType = cell.GetValue<string>();
                         mMemberPayDataList.Add(memberPay);

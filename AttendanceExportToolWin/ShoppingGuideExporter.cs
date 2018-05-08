@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -135,6 +136,12 @@ namespace AttendanceExportTool
 
                     cell.Value = string.Format(COMMENT_1, unClockTimeList.Count, String.Join(",", unClockTimeList), overTimeCount,
                         overTimeStr, unClockInListString, unClockOffListString, signTimeList.Count, startSign, endSign);
+
+                    if (unClockTimeList.Count + overTimeCount > restDays)
+                    {
+                        cell.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        cell.Style.Fill.BackgroundColor.SetColor(Color.Chocolate);
+                    }
 
                     string comment = "上午漏报: \n" +
                                      String.Join(",", unClockInList.Select(p => p.ToShoppingGuideCommentString()));
