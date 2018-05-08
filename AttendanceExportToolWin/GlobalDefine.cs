@@ -173,6 +173,7 @@ namespace AttendanceExportTool
             "做六休一",
             "做一休一",
             "做五休二",
+            "做三休一",
         };
 
         public static readonly int[] WORK_TYPE_DAY = new[]
@@ -180,6 +181,7 @@ namespace AttendanceExportTool
             4,
             15,
             8,
+            7,
         };
 
         public static readonly string[] SHOPPING_EXCEL_TITLES = new[]
