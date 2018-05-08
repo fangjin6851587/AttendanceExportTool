@@ -85,8 +85,16 @@ namespace AttendanceExportTool
                         }
                     }
 
+                    int overTimeCount = 0;
+                    string overTimeStr = string.Empty;
+                    if (member != null)
+                    {
+                        overTimeCount = member.GetOvertimeList().Count;
+                        overTimeStr = member.GetOvertimeDateTimeString();
+                    }
+
                     cell = sheet.Cells[row, col++];
-                    int leaveDay = unClockTimeList.Count - restDays;
+                    int leaveDay = unClockTimeList.Count + overTimeCount - restDays;
                     if (leaveDay > 0)
                     {
                         cell.Value = leaveDay;
@@ -114,14 +122,6 @@ namespace AttendanceExportTool
                         }
                     }
 
-                    int overTimeCount = 0;
-                    string overTimeStr = string.Empty;
-                    if (member != null)
-                    {
-                        overTimeCount = member.GetOvertimeList().Count;
-                        overTimeStr = member.GetOvertimeDateTimeString();
-                    }
-
                     string unClockInListString = "0";
                     if (unClockInList.Count > 0)
                     {
@@ -134,9 +134,68 @@ namespace AttendanceExportTool
                         unClockOffListString = String.Join(",", unClockOffList.Select(p => p.SignTime.Day));
                     }
 
-                    cell.Value = string.Format(COMMENT_1, unClockTimeList.Count, String.Join(",", unClockTimeList), overTimeCount,
-                        overTimeStr, unClockInListString, unClockOffListString, signTimeList.Count, startSign, endSign);
+                    cell.IsRichText = true;
+                    cell.RichText.Clear();
 
+                    int[] overTimeArray = new int[0];
+
+                    if (!string.IsNullOrEmpty(overTimeStr))
+                    {
+                        overTimeArray = Array.ConvertAll(overTimeStr.Split(','), input => int.Parse(input));
+                    }
+                    var sameRestAndOverTime = unClockTimeList.ToArray().Intersect(overTimeArray).ToArray();
+
+//                    string content = string.Format(COMMENT_1, unClockTimeList.Count, unClockTimeStr, overTimeCount,
+//                        overTimeStr, unClockInListString, unClockOffListString, signTimeList.Count, startSign, endSign);
+//                    cell.Value = content;
+
+                    string c1 = "【本月共休息{0}天】";
+                    string c2 = "\n【本月共加班{0}天】";
+                    string c3 = "\n【漏报】{0}上午未报、{1}下午未报\n【本月共报岗{2}天】{3}号开始有报岗记录，{4}号开始无报岗记录";
+
+
+                    ExcelRichText richText;
+                    cell.RichText.Add(string.Format(c1, unClockTimeList.Count));
+                    for (int i = 0; i < unClockTimeList.Count; i++)
+                    {
+                        string valueStr = unClockTimeList[i].ToString();
+                        richText = cell.RichText.Add(valueStr);
+                        if (sameRestAndOverTime.Contains(unClockTimeList[i]))
+                        {
+                            richText.Color = Color.Red;
+                        }
+                        else
+                        {
+                            richText.Color = Color.Black;
+                        }
+                        if (i < unClockTimeList.Count - 1)
+                        {
+                            richText = cell.RichText.Add(",");
+                            richText.Color = Color.Black;
+                        }
+                    }
+                    richText = cell.RichText.Add(string.Format(c2, overTimeCount));
+                    richText.Color = Color.Black;
+                    for (int i = 0; i < overTimeArray.Length; i++)
+                    {
+                        string valueStr = overTimeArray[i].ToString();
+                        richText = cell.RichText.Add(valueStr);
+                        if (sameRestAndOverTime.Contains(overTimeArray[i]))
+                        {
+                            richText.Color = Color.Red;
+                        }
+                        else
+                        {
+                            richText.Color = Color.Black;
+                        }
+                        if (i < overTimeArray.Length - 1)
+                        {
+                            richText = cell.RichText.Add(",");
+                            richText.Color = Color.Black;
+                        }
+                    }
+                    richText = cell.RichText.Add(string.Format(c3, unClockInListString, unClockOffListString, signTimeList.Count, startSign, endSign));
+                    richText.Color = Color.Black;
                     if (unClockTimeList.Count + overTimeCount > restDays)
                     {
                         cell.Style.Fill.PatternType = ExcelFillStyle.Solid;
