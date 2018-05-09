@@ -741,6 +741,7 @@
     <Compile Include="MemberDataManager.cs" />
     <Compile Include="MemberPayDataManager.cs" />
     <Compile Include="OvertimeDataManager.cs" />
+    <Compile Include="PayForgetMemberExporter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProgressForm.cs">
       <SubType>Form</SubType>

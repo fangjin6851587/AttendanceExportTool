@@ -73,6 +73,7 @@ namespace AttendanceExportToolWin
                 new BusinessExcelExporter(),
                 new ShoppingGuideExporter(),
                 new AdministrativeExport(),
+                new PayForgetMemberExporter()
             };
 
             int totalProgress = initList.Count + excelWriters.Count;

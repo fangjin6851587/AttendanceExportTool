@@ -10,3 +10,15 @@ C:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Release\AttendanceEx
 C:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Release\AttendanceExportToolWin.pdb
 C:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Release\AttendanceExportToolWin.csprojResolveAssemblyReference.cache
 C:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Release\AttendanceExportToolWin.ProgressForm.resources
+D:\Project\AttendanceExportTool\AttendanceExportToolWin\bin\Release\AttendanceExportToolWin.exe.config
+D:\Project\AttendanceExportTool\AttendanceExportToolWin\bin\Release\AttendanceExportToolWin.exe
+D:\Project\AttendanceExportTool\AttendanceExportToolWin\bin\Release\AttendanceExportToolWin.pdb
+D:\Project\AttendanceExportTool\AttendanceExportToolWin\bin\Release\Newtonsoft.Json.dll
+D:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Release\AttendanceExportToolWin.csprojResolveAssemblyReference.cache
+D:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Release\AttendanceExportToolWin.AttendanceExportWindow.resources
+D:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Release\AttendanceExportToolWin.ProgressForm.resources
+D:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Release\AttendanceExportToolWin.Properties.Resources.resources
+D:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Release\AttendanceExportToolWin.csproj.GenerateResource.Cache
+D:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Release\AttendanceExportToolWin.csproj.CoreCompileInputs.cache
+D:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Release\AttendanceExportToolWin.exe
+D:\Project\AttendanceExportTool\AttendanceExportToolWin\obj\Release\AttendanceExportToolWin.pdb

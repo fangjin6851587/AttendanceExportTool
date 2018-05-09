@@ -110,11 +110,15 @@ namespace AttendanceExportTool
         private Dictionary<int, string> mBusinessMemberNameList = new Dictionary<int, string>();
         private Dictionary<int, string> mAdministrativeMemberNameList = new Dictionary<int, string>();
         private Dictionary<string, int> mMemberNameList = new Dictionary<string, int>();
+        private Dictionary<int, AttendanceImportData> mShoppingGuideMemberNameList = new Dictionary<int, AttendanceImportData>();
 
         public Dictionary<int, string> BusinessMemberNameList => mBusinessMemberNameList;
         public Dictionary<string, int> MemberNameList => mMemberNameList;
 
         public Dictionary<int, string> AdministrativeMemberNameList => mAdministrativeMemberNameList;
+
+        public Dictionary<int, AttendanceImportData> ShoppingGuideMemberNameList => mShoppingGuideMemberNameList;
+
 
 
 
@@ -408,6 +412,14 @@ namespace AttendanceExportTool
                 {
                     mAdministrativeMemberNameList.Add(rowData.Id, rowData.Name);
                 }
+
+                if (!mShoppingGuideMemberNameList.ContainsKey(rowData.Id) &&
+                    (rowData.GetWorkerType() == WorkerType.ShoppingGuide || specialMember != null &&
+                     specialMember.GetWorkerType() == WorkerType.ShoppingGuide))
+                {
+                    mShoppingGuideMemberNameList.Add(rowData.Id, rowData);
+                }
+
 
                 if (!mMemberNameList.ContainsKey(rowData.Name))
                 {
